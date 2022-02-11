@@ -6,12 +6,14 @@ import java.util.List;
 
 
 public class MenuGeneratorController {
-//meals controls
+    MenuDAO menu = new MenuDAO();
+
+
+    //meals controls
     private List<Meals> meals = new ArrayList<Meals>();
     private List<Recipes> recipes = new ArrayList<Recipes>();
     private List<Ingredients> ingredients = new ArrayList<Ingredients>();
 
-    MenuDAO menu = new MenuDAO();
 
 
     public void generateMeals(int days){
@@ -25,7 +27,7 @@ public class MenuGeneratorController {
             System.out.println(" ");
         }
     }
-
+//Meal Controls
     public void getFullMealsList(){
         meals = menu.getMealsList();
     }
@@ -66,6 +68,8 @@ public class MenuGeneratorController {
         Recipes recipe = new Recipes();
         recipe.setRecipeName(name);
         recipes.add(recipe);
+        menu.insertRecipe(name, instructions, notes);
+
     }
 
 
@@ -73,7 +77,13 @@ public class MenuGeneratorController {
 
     }
 
+//Ingredients Controls
+    public void addIngredient(String name, String type){
+        Ingredients ingredient = new Ingredients();
+        ingredient.setIngredientName(name);
+        menu.insertIngredient(name, type);
 
+    }
 
 
 

@@ -3,17 +3,28 @@ package MenuGenerator;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static javafx.stage.StageStyle.DECORATED;
 
 
 public class MenuFx extends Application {
+
+    MenuGeneratorController menuGeneratorController = new MenuGeneratorController();
+
+    private List<Ingredients> ingredients = new ArrayList<>();
+
 
     public static void main(String[] args) {
         launch(args);
@@ -36,25 +47,26 @@ public class MenuFx extends Application {
         Scene scene = new Scene(parentContainer);
         primaryStage.setScene(scene);
         //labels
-        Label label = new Label("Welcome to HK Meal Generator! Choose your desired option");
+        Label label1 = new Label("Welcome to HK Meal Generator! Choose your desired option");
 
         //button options
         Button button1 = new Button("Add a New Meal or Recipe");
-        button1.setPrefWidth(300);
         Button button2 = new Button("Generate Meals");
-        button2.setPrefWidth(300);
         Button button3 = new Button("Show All My Meal Options");
-        button3.setPrefWidth(300);
         Button button4 = new Button("Edit or Delete Existing Meal");
-        button4.setPrefWidth(300);
 
 
         //parentContainer Children
-        parentContainer.getChildren().add(label);
-        parentContainer.getChildren().add(button1);
-        parentContainer.getChildren().add(button2);
-        parentContainer.getChildren().add(button3);
-        parentContainer.getChildren().add(button4);
+        parentContainer.getChildren().addAll(label1, button1, button2, button3, button4);
+
+        for (Node node: parentContainer.getChildren()) {
+            if (node instanceof Button) {
+                ((Button) node).setPrefWidth(300);
+            }
+        }
+
+       // Stream.of(button1, button2, button3, button4).forEach(button -> button.setPrefWidth(300));
+
 
         //button event listeners
         button1.setOnAction(new EventHandler<ActionEvent>() {
@@ -99,16 +111,10 @@ public class MenuFx extends Application {
         Button submitMeal = new Button("Submit Meal");
         Button addRecipe = new Button("Add Recipe");
 
-        vBox.getChildren().add(instructions);
-        vBox.getChildren().add(enterMealName);
-        vBox.getChildren().add(mealNameTxt);
-        vBox.getChildren().add(enterMealNotes);
-        vBox.getChildren().add(mealNotesTxt);
-        vBox.getChildren().add(addRecipe);
-        vBox.getChildren().add(submitMeal);
-        vBox.getChildren().add(backToMain(primaryStage));
+        vBox.getChildren().addAll(instructions, enterMealName, mealNameTxt, enterMealNotes, mealNotesTxt, addRecipe,
+                submitMeal, backToMain(primaryStage));
 
-        MenuGeneratorController menuGeneratorController = new MenuGeneratorController();
+
 
         submitMeal.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -134,33 +140,96 @@ public class MenuFx extends Application {
     public void addANewRecipe(Stage primaryStage){
         VBox vBox = new VBox();
         Scene scene2 = new Scene(vBox);
+        HBox hBox = new HBox();
+
         primaryStage.setScene(scene2);
+
+        //Labels
         Label instructions = new Label("Add a new recipe");
         Label enterRecipeName = new Label("Enter recipe name *");
+        Label enterRecipeIngredients = new Label("Enter recipe ingredients and press 'Add'");
         Label enterRecipeInstructions = new Label("Enter recipe instructions *");
         Label enterRecipeNotes = new Label("Enter recipe notes");
         Label recipeToMealsLabel = new Label("Select the meal(s) to which this recipe belongs");
 
+        //Text Fields
         TextField enterRecipeNameTxt = new TextField();
+        TextField enterRecipeIngredientsTxt = new TextField();
+        TextField enterIngredientTypeTxt = new TextField();
+        enterRecipeIngredientsTxt.setPromptText("Name");
+        enterIngredientTypeTxt.setPromptText("Type");
         TextField enterRecipeInstructionsTxt = new TextField();
         TextField enterRecipesNotesTxt = new TextField();
-        //ComboBox recipeToMealsCombo = new ComboBox();
+        ComboBox <String> recipeToMealsCombo = new  ComboBox<String>();
 
+        //Buttons
+        Button addIngredient = new Button("Add");
         Button submitRecipe = new Button("Submit Recipe");
 
-        vBox.getChildren().add(instructions);
-        vBox.getChildren().add(enterRecipeName);
-        vBox.getChildren().add(enterRecipeNameTxt);
-        vBox.getChildren().add(enterRecipeInstructions);
-        vBox.getChildren().add(enterRecipeInstructionsTxt);
-        vBox.getChildren().add(enterRecipeNotes);
-        vBox.getChildren().add(enterRecipesNotesTxt);
-        vBox.getChildren().add(submitRecipe);
-        vBox.getChildren().add(backToMain(primaryStage));
+        //Add to scene
+        vBox.getChildren().addAll(instructions, enterRecipeName, enterRecipeNameTxt, enterRecipeIngredients);
 
-        //recipeToMealsCombo.getItems().add("Meal 1");
-        //recipeToMealsCombo.getItems().add("Meal 2");
-        //recipeToMealsCombo.getItems().add("Meal 3");
+        vBox.getChildren().add(hBox);
+
+        hBox.getChildren().addAll(enterRecipeIngredientsTxt, enterIngredientTypeTxt, addIngredient);
+        vBox.getChildren().addAll(enterRecipeInstructions, enterRecipeInstructionsTxt, enterRecipeNotes,
+                enterRecipesNotesTxt, recipeToMealsLabel, recipeToMealsCombo);
+
+
+       //combobox
+        recipeToMealsCombo.getItems().addAll("Meal 1", "Meal 2", "Meal 3");
+
+
+        //Buttons
+        vBox.getChildren().addAll(submitRecipe, backToMain(primaryStage));
+
+        //Submits the recipe and ingredients. Ingredients can't be null with a new recipe submission.
+        submitRecipe.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (ingredients.isEmpty()){
+                    Label ingredientsRequired = new Label("Ingredients are required to submit a recipe");
+                }
+                //insert recipe name, instructions, and notes into db
+                String name = enterRecipeNameTxt.getText();
+                String instructions = enterRecipeInstructionsTxt.getText();
+                String notes = enterRecipeInstructionsTxt.getText();
+
+                menuGeneratorController.addRecipe(name, instructions, notes);
+
+                //insert ingredients list object name and type into db
+                int i=0;
+                while(i<ingredients.size()){
+                    Ingredients ingredient = ingredients.get(i);
+                    String ingredientName1 = ingredient.getIngredientName();
+                    String type = ingredient.getIngredientType();
+                    menuGeneratorController.addIngredient(ingredientName1, type);
+                }
+
+                //show success/verification message
+                Label submitSuccess = new Label("Added recipe = " + name);
+
+                vBox.getChildren().add(submitSuccess);
+            }
+        });
+
+        addIngredient.setOnAction(new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent actionEvent){
+               String ingredientName = enterRecipeIngredientsTxt.getText();
+               String ingredientType = enterIngredientTypeTxt.getText();
+               Ingredients ingredient = new Ingredients();
+               ingredient.setIngredientName(ingredientName);
+               ingredient.setIngredientType(ingredientType);
+
+               ingredients.add(ingredient);
+
+               Label submitSuccess = new Label("Added recipe = " + ingredientName);
+               vBox.getChildren().add(submitSuccess);
+            }
+
+        });
+
     }
 
     public void generateMealsFx(Stage primaryStage){
@@ -177,8 +246,7 @@ public class MenuFx extends Application {
         Scene scene2 = new Scene(vBox);
         primaryStage.setScene(scene2);
         Label label = new Label("Choose a meal to view from the list of meals below");
-        vBox.getChildren().add(label);
-        vBox.getChildren().add(backToMain(primaryStage));
+        vBox.getChildren().addAll(label, backToMain(primaryStage));
 
     };
 
